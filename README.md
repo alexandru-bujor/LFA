@@ -48,22 +48,22 @@ A Deterministic Finite Automaton (DFA) is defined by:
 - **Σ = {a, b, c, d, e, f, j}**
 - **Transition Function (δ)**:
     - δ(q0, 'a') = q1
-    - δ(q0, 'b') = q1
-    - δ(q0, 'c') = q2
-    - δ(q0, 'd') = q3
-    - δ(q0, 'e') = q4
-    - δ(q1, 'a') = q1
-    - δ(q1, 'b') = q1
-    - δ(q1, 'c') = q2
-    - δ(q1, 'd') = q3
-    - δ(q1, 'e') = q4
-    - δ(q2, 'e') = q5
-    - δ(q2, 'd') = q3
-    - δ(q3, 'e') = q5
-    - δ(q3, 'f') = q3
-    - δ(q3, 'j') = q2
-    - δ(q4, 'e') = q4
-    - δ(q5, 'e') = q5
+    - Variant 4:
+    - VN={S, L, D},
+    - VT={a, b, c, d, e, f, j},
+    - P={
+    - S → aS
+    - S → bS
+    - S → cD
+    - S → dL
+    - S → e
+    - L → eL
+    - L → fL
+    - L → jD
+    - L → e
+    - D → eD
+    - D → d
+    - }
 
 ### Start State: **q0**
 
