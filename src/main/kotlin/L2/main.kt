@@ -1,6 +1,12 @@
 package L2
 
+import java.awt.Desktop
 import java.io.File
+import javax.imageio.ImageIO
+import javax.swing.ImageIcon
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JScrollPane
 
 class FiniteAutomaton(
     val states: Set<String>,
@@ -75,39 +81,76 @@ class FiniteAutomaton(
 
         val stateMap = dfaStates.mapIndexed { index, state -> state to "q$index" }.toMap()
         val newTransitions = dfaTransitions.mapKeys { Pair(stateMap[it.key.first]!!, it.key.second) }
-            .mapValues { stateMap[it.value]!! }
+            .mapValues { setOf(stateMap[it.value]!!) }
 
         return FiniteAutomaton(
             states = stateMap.values.toSet(),
             alphabet = alphabet,
-            transitions = newTransitions.mapValues { setOf(it.value) },
+            transitions = newTransitions,
             startState = stateMap[startClosure]!!,
             finalStates = dfaFinalStates.map { stateMap[it]!! }.toSet()
         )
     }
 
     fun visualize(filename: String) {
+        val dotFile = File("$filename.dot")
+        val pngFile = File("$filename.png")
+
+        // Generate DOT content
         val dot = StringBuilder("digraph FiniteAutomaton {\n")
         dot.append("  rankdir=LR;\n")
 
         for (state in states) {
             val shape = if (state in finalStates) "doublecircle" else "circle"
-            dot.append("  $state [shape=$shape];\n")
+            dot.append("  \"$state\" [shape=$shape];\n")
         }
 
         dot.append("  start [shape=none, label=\"\", width=0.0, height=0.0];\n")
-        dot.append("  start -> $startState;\n")
+        dot.append("  start -> \"$startState\";\n")
 
         for ((key, dests) in transitions) {
             val (state, symbol) = key
             for (dest in dests) {
-                dot.append("  $state -> $dest [label=\"$symbol\"];\n")
+                dot.append("  \"$state\" -> \"$dest\" [label=\"$symbol\"];\n")
             }
         }
 
         dot.append("}")
-        File("$filename.dot").writeText(dot.toString())
-        println("Graph saved as $filename.dot. Use Graphviz to render it.")
+
+        // Save DOT file
+        dotFile.writeText(dot.toString())
+
+        // Convert DOT to PNG using Graphviz
+        try {
+            val process = ProcessBuilder("dot", "-Tpng", dotFile.absolutePath, "-o", pngFile.absolutePath)
+                .redirectErrorStream(true)
+                .start()
+            process.waitFor()
+            if (!pngFile.exists()) {
+                println("Graphviz is required to generate the graph image. Please install Graphviz and ensure 'dot' is in your PATH.")
+                return
+            }
+        } catch (e: Exception) {
+            println("Error running Graphviz: ${e.message}")
+            return
+        }
+
+        // Display the image
+        displayImage(pngFile)
+    }
+
+    private fun displayImage(imageFile: File) {
+        val img = ImageIO.read(imageFile) ?: return
+        val icon = ImageIcon(img)
+        val label = JLabel(icon)
+        val frame = JFrame()
+
+        frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        frame.title = "Finite Automaton Visualization"
+        frame.contentPane.add(JScrollPane(label))
+        frame.pack()
+        frame.setLocationRelativeTo(null)
+        frame.isVisible = true
     }
 }
 
@@ -142,7 +185,6 @@ fun classifyGrammar(grammar: Map<String, List<String>>): String {
 }
 
 fun isRegularGrammar(production: String): Boolean {
-    // Regular grammar allows one terminal followed by a non-terminal or just a terminal
     return production.all { it.isLowerCase() } || (production.length == 2 && production[1].isUpperCase())
 }
 
@@ -171,27 +213,17 @@ fun main() {
 
     // Grammar Classification
     println("\nGrammar Classification:")
-    val grammar = mapOf(
-        "q0" to listOf("aq1", "bq2"),
-        "q1" to listOf("aq2", "bq1"),
-        "q2" to listOf("aq1", "bq3"),
-        "q3" to listOf("ε")
-    )
+    val grammar = fa.toRegularGrammar().mapValues { it.value.toList() }
     println(classifyGrammar(grammar))
 
-    // NDFA to DFA Conversion
+    // Visualization of FA
+    println("\nVisualizing Finite Automaton...")
+    fa.visualize("fa_graph")
+
+    // NDFA to DFA Conversion and Visualization
     if (!fa.isDeterministic()) {
         println("\nConverting NDFA to DFA...")
         val dfa = fa.toDFA()
-        println("DFA states: ${dfa.states}")
-        println("DFA transitions:")
-        for ((key, dest) in dfa.transitions) {
-            println("δ(${key.first}, ${key.second}) = $dest")
-        }
-        println("DFA final states: ${dfa.finalStates}")
         dfa.visualize("dfa_graph")
     }
-
-    // Visualize the FA
-    fa.visualize("fa_graph")
 }

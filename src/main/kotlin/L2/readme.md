@@ -37,33 +37,37 @@ If none of the conditions for Types 3, 2, or 1 hold, the grammar is classified a
 
 ```kotlin
 fun classifyGrammar(grammar: Map<String, List<String>>): String {
-    var isType3 = true
-    var isType2 = true
-    var isType1 = true
+   var isType3 = true
+   var isType2 = true
+   var isType1 = true
 
-    for ((nonTerminal, productions) in grammar) {
-        for (production in productions) {
-            // Check for Regular Grammar (Type 3)
-            if (!isRegularGrammar(production)) {
-                isType3 = false
-            }
-            // Check for Context-Free Grammar (Type 2)
-            if (production.length > 1 && production[0].isLowerCase()) {
-                isType2 = false
-            }
-            // Check for Context-Sensitive Grammar (Type 1)
-            if (production.length < nonTerminal.length) {
-                isType1 = false
-            }
-        }
-    }
+   for ((nonTerminal, productions) in grammar) {
+      for (production in productions) {
+         // Check for Regular Grammar (Type 3)
+         if (!isRegularGrammar(production)) {
+            isType3 = false
+         }
+         // Check for Context-Free Grammar (Type 2)
+         if (production.length > 1 && production[0].isLowerCase()) {
+            isType2 = false
+         }
+         // Check for Context-Sensitive Grammar (Type 1)
+         if (production.length < nonTerminal.length) {
+            isType1 = false
+         }
+      }
+   }
 
-    return when {
-        isType3 -> "Type 3 (Regular Grammar)"
-        isType2 -> "Type 2 (Context-Free Grammar)"
-        isType1 -> "Type 1 (Context-Sensitive Grammar)"
-        else -> "Type 0 (Unrestricted Grammar)"
-    }
+   return when {
+      isType3 -> "Type 3 (Regular Grammar)"
+      isType2 -> "Type 2 (Context-Free Grammar)"
+      isType1 -> "Type 1 (Context-Sensitive Grammar)"
+      else -> "Type 0 (Unrestricted Grammar)"
+   }
+}
+
+fun isRegularGrammar(production: String): Boolean {
+   return production.all { it.isLowerCase() } || (production.length == 2 && production[1].isUpperCase())
 }
 
 ```
@@ -184,7 +188,7 @@ The visualization follows conventions:
 3. The start state has an incoming arrow
 4. Transitions are represented as labeled arrows
 
-```
+```kotlin
    fun visualize(filename: String) {
         val dot = StringBuilder("digraph FiniteAutomaton {\n")
         dot.append("  rankdir=LR;\n")
@@ -209,6 +213,25 @@ The visualization follows conventions:
         println("Graph saved as $filename.dot. Use Graphviz to render it.")
     }
 ```
+
+Also added functionality in order to visualize, and save the graphs as .dot files and .png files. After the program ends, the graphs just pop-up.
+
+## Results
+```
+Regular Grammar:
+q0 → aq1
+q0 → aq2
+q1 → bq1
+q1 → aq2
+q2 → aq1
+q2 → b
+q2 → bq3
+
+Grammar Classification:
+Type 0 (Unrestricted Grammar)
+```
+![DFA](dfa_graph.png)
+![FA](fa_graph.png)
 
 ## Conclusion
 The results highlight the relationship between finite automata and regular grammars, as well as the process of converting from non-deterministic to deterministic automata. This conversion is fundamental in compiler design and pattern matching algorithms. The implementation of the grammar classification function further demonstrates the relationship between formal languages and their corresponding automata, reinforcing the theoretical foundation of the Chomsky hierarchy.
