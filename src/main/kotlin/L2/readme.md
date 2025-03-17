@@ -230,8 +230,11 @@ q2 → bq3
 Grammar Classification:
 Type 0 (Unrestricted Grammar)
 ```
-![DFA](dfa_graph.png)
 ![FA](fa_graph.png)
+![DFA](dfa_graph.png)
+
+The two new DFA states come from the set of reachable states: {q1, q2} and {q3}. These states represent combinations of the NDFA's original states that are considered as a single state in the DFA.
+
 
 ## Conclusion
 The results highlight the relationship between finite automata and regular grammars, as well as the process of converting from non-deterministic to deterministic automata. This conversion is fundamental in compiler design and pattern matching algorithms. The implementation of the grammar classification function further demonstrates the relationship between formal languages and their corresponding automata, reinforcing the theoretical foundation of the Chomsky hierarchy.
